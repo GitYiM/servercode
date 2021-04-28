@@ -1,0 +1,16 @@
+#服务端口
+server:
+  compression:
+    enabled: true
+  servlet:
+    context-path: /unnetdisk-server
+  ssl:
+    key-store: classpath:unnetdisk.jks
+    key-store-password: 2kw0vb13427
+spring:
+  profiles:
+    active: test
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 1000MB

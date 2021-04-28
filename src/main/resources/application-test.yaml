@@ -1,0 +1,79 @@
+#企业微信配置
+server:
+  port: 443
+wechat:
+  agentID: 1000008
+  secretID: _5dsOeVV-M8jRE9TgKzZ1tdtbjj17w3gbl9q3KG9_jY
+  corpID: ww2d0603a281d6092a
+  tokenUrl: https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=
+  userInfoUrl: https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token=
+  userDetailUrl: https://qyapi.weixin.qq.com/cgi-bin/user/get?access_token=
+  departmentListUrl: https://qyapi.weixin.qq.com/cgi-bin/department/list?access_token=
+  ticket: https://qyapi.weixin.qq.com/cgi-bin/ticket/get?access_token=
+  jsapiTicket: https://qyapi.weixin.qq.com/cgi-bin/get_jsapi_ticket?access_token=
+  redirectUrl: http://disk.wxcp.un-net.com/unnetdisk-server/mobile?access_token=
+  uploadUrl: https://qyapi.weixin.qq.com/cgi-bin/media/upload?access_token=
+  sendUrl: https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=
+  code2sessionUrl: https://api.weixin.qq.com/sns/jscode2session?appid=
+  appId: wx8dc310e1b70b7bc5
+  secret: 704c7c916f8dac07ade9148d91aa0afd
+
+spring:
+  redis:
+    database: 0
+    host: localhost
+#    host: 119.29.4.75
+    port: 6379
+    password:
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+
+  aop:
+    proxy-target-class: true
+    auto: true
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+#      url: jdbc:mysql://140.143.230.66:3306/netdisk?nullCatalogMeansCurrent=true&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&serverTimezone=GMT%2B8&useSSL=false
+#      url: jdbc:mysql://172.23.27.139:3306/netdisk?nullCatalogMeansCurrent=true&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&serverTimezone=GMT%2B8&useSSL=false
+#      url: jdbc:mysql://localhost:3306/netdisk?nullCatalogMeansCurrent=true&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&serverTimezone=GMT%2B8&useSSL=false
+      url: jdbc:mysql://119.29.4.75:3306/netdisk?nullCatalogMeansCurrent=true&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&serverTimezone=GMT%2B8&useSSL=false
+
+      username: root
+#      password: 123456
+#      username: GitYiM
+      password: some_pass
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      initialSize: 6
+      minIdle: 6
+      maxActive: 20
+minio:
+#  endpoint: http://172.23.27.139:9000/
+#  access-key: AKIAIOSFODNN7EXAMPLE
+#  secret-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+#  endpoint: https://play.min.io
+#  access-key: Q3AM3UQ867SPQQA43P2F
+#  secret-key: zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG
+#  endpoint: http://172.23.27.119:7480
+#  access-key: U6DVKQNYCPHCIIP0XZFJ
+#  secret-key: A32aqcbXEECBtfxL2UqqBoMs2zyJJBMnRpG0gj7i
+  endpoint: http://cephio.unnetdisk.ltd:7480
+  access-key: T1M1O9PCVNBKXJK9QPBL
+  secret-key: gCzeVy9I33akmmPyycI5AWrGv6lQOuaOQ1n6HERx
+
+mybatis-plus:
+  #注意：一定要对应mapper映射xml文件的所在路径
+  mapper-locations: classpath:/mapper/*.xml
+    # 注意：对应实体类的路径//entity扫描的包名
+  type-aliases-package: unnet.weixin.netdisk.entity
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+    call-setters-on-nulls: true
+  global-config:
+    banner: false
+swagger:
+  enable: true
