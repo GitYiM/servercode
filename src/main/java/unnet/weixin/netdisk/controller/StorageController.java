@@ -28,8 +28,10 @@ import unnet.weixin.netdisk.utils.UserCheck;
 import javax.annotation.Resource;
 import javax.annotation.Resources;
 import java.io.*;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +63,8 @@ public class StorageController extends BaseController {
     private UploadInfoService uploadInfoService;
     @Resource
     private UserInfoService userInfoService;
+    @Resource
+    private OperLogService operLogService;
 
     @Resource
     private HistoryService historyService;
@@ -202,6 +206,30 @@ public class StorageController extends BaseController {
         return new RestResult<>(-1, "未找到该用户的文件信息");
     }
 
+    @ApiOperation("或许分享的文件")
+    @GetMapping("/getSharedFileList")
+    public RestResult<?> getSharedFileList(String path, @RequestHeader("userSession") String userSession) {
+        LoginStatusInfo curInfo = null;
+        try {
+            curInfo = userCheck.checkUserSession(userSession);
+        } catch (Exception e) {
+            logger.warn("catch");
+            return new RestResult<>(-1, e.getMessage());
+        }
+        String openid = curInfo.getOpenId();
+        List<FileInfo> list = null;
+        if(openid != null) {
+            list = fileInfoService.selectByPathExactly(path);
+            for(FileInfo item: list) {
+                if(ArrayUtils.contains(Constants.thumbnailTypes, item.getType())){
+                    item.setThumbnail(selfPreview("thumbnails", item.getPath().replace("/",""), openid));
+                }
+            }
+            return new RestResult<>(0, "查询成功", list);
+        }
+        return new RestResult<>(-1, "未找到该用户的文件信息");
+
+    }
     @ApiOperation("文件预览")
     @GetMapping(value = "/preview")
     public RestResult<?> preview(String path, String filename, @RequestHeader("userSession") String userSession) {
@@ -503,13 +531,59 @@ public class StorageController extends BaseController {
     /**
      * 待完善+++数据库的表需要加新的统计属性
      */
-//    @ApiOperation("统计已用空间大小")
-//    @RequestMapping(value = "/Usage", method = RequestMethod.GET)
-//    public RestResult<?> Usage(String userId) {
-//       Long aLong = userInfoService.selectUserUsage(userId);
-//        if (aLong == null) {
-//            return new RestResult<>(0, "统计失败");
-//        }
-//        return new RestResult<>(0, "统计成功", aLong);
-//    }
+    @ApiOperation("统计已用空间大小")
+    @RequestMapping(value = "/Usage", method = RequestMethod.GET)
+    public RestResult<?> Usage(@RequestHeader("userSession") String userSession) {
+        LoginStatusInfo curInfo = null;
+        try {
+            curInfo = userCheck.checkUserSession(userSession);
+        } catch (Exception e) {
+            return new RestResult<>(-1, e.getMessage());
+        }
+        String openid = curInfo.getOpenId();
+        BigDecimal aLong = fileInfoService.checkUserUsage(openid);
+        if (aLong == null) {
+            return new RestResult<>(0, "统计失败");
+        }
+        return new RestResult<>(0, "统计成功", aLong);
+    }
+
+    @ApiOperation("获取操作日志")
+    @GetMapping("/getAllLogs")
+    public RestResult<?> getAllLogs(int dayCount ,@RequestHeader("userSession") String userSession) {
+        LoginStatusInfo curInfo = null;
+        try {
+            curInfo = userCheck.checkUserSession(userSession);
+        } catch (Exception e) {
+            return new RestResult<>(-1, e.getMessage());
+        }
+        String openid = curInfo.getOpenId();
+
+        List<OperLog> list = new ArrayList<>();
+        if(openid != null) {
+            list = operLogService.getAllLog(openid, dayCount);
+            return new RestResult<>(0, "查询成功", list);
+        }
+        return new RestResult<>(-1, "未找到该用户的文件信息");
+    }
+
+
+
+    @ApiOperation("获取文档预览地址")
+    @GetMapping("/documentPreview")
+    public RestResult<?> getDocumentPreviewUrl(String path, @RequestHeader("userSession") String userSession) {
+        LoginStatusInfo curInfo = null;
+        try {
+            curInfo = userCheck.checkUserSession(userSession);
+        } catch (Exception e) {
+            return new RestResult<>(-1, e.getMessage());
+        }
+        String openid = curInfo.getOpenId();
+        String bucket = openid.toLowerCase();
+        if(openid != null) {
+            return new RestResult<>(0, "查询成功", embeddedStorageService.preview(bucket, null, path));
+        }
+        return new RestResult<>(-1, "未找到该用户的文件信息");
+    }
+
 }

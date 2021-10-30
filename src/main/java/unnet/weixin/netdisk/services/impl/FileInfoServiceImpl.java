@@ -4,22 +4,29 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.transaction.annotation.Transactional;
+import unnet.weixin.netdisk.constants.FileOperType;
 import unnet.weixin.netdisk.entity.FileInfo;
 import unnet.weixin.netdisk.mapper.FileInfoMapper;
 import unnet.weixin.netdisk.services.FileInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import unnet.weixin.netdisk.services.HistoryService;
+import unnet.weixin.netdisk.services.OperLogService;
 import unnet.weixin.netdisk.services.StorageService;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static unnet.weixin.netdisk.constants.Constants.filterPath;
 import static unnet.weixin.netdisk.constants.Constants.thumbnailTypes;
+import static unnet.weixin.netdisk.constants.FileOperType.ADD;
+import static unnet.weixin.netdisk.constants.FileOperType.DELETE;
+import static unnet.weixin.netdisk.constants.FileOperType.UPDATE;
 
 /**
  * <p>
@@ -40,6 +47,9 @@ public class FileInfoServiceImpl extends ServiceImpl<FileInfoMapper, FileInfo> i
 
     @Resource
     private HistoryService historyService;
+
+    @Resource
+    private OperLogService operLogService;
 
     @Override
     @Transactional
@@ -66,7 +76,12 @@ public class FileInfoServiceImpl extends ServiceImpl<FileInfoMapper, FileInfo> i
                     .eq("openid", openid);
             Integer num = fileInfoMapper.selectCount(wrapper);
             if (num == 0){
-                return fileInfoMapper.insert(fileInfo);
+                int res = fileInfoMapper.insert(fileInfo);
+                if(res >= 0 &&  !path.split("/")[0].equals("thumbnails")) {
+                    String operRes = "成功";
+                    operLogService.addLog(openid, ADD, contentType, filename, operRes, null);
+                }
+                return res;
             }
         }
         return 0;
@@ -112,7 +127,13 @@ public class FileInfoServiceImpl extends ServiceImpl<FileInfoMapper, FileInfo> i
         wrapper = new QueryWrapper<>();
         wrapper.eq("path", path)
                 .eq("openid", openid);
-        return fileInfoMapper.delete(wrapper);
+        FileInfo file = fileInfoMapper.selectOne(wrapper);
+        int res = fileInfoMapper.delete(wrapper);
+        if(res > 0) {
+            String operRes = "成功";
+            operLogService.addLog(openid, DELETE, file.getType(), file.getFileName(), operRes, null);
+        }
+        return res;
     }
 
     @Override
@@ -121,7 +142,13 @@ public class FileInfoServiceImpl extends ServiceImpl<FileInfoMapper, FileInfo> i
         QueryWrapper<FileInfo> wrapper = new QueryWrapper<>();
         wrapper.eq("path", path)
                 .eq("openid", openid);
-        return fileInfoMapper.delete(wrapper);
+        FileInfo fileInfo = fileInfoMapper.selectOne(wrapper);
+        int res = fileInfoMapper.delete(wrapper);
+        if(res > 0) {
+            String operRes = "成功";
+            operLogService.addLog(openid, DELETE, fileInfo.getType(), fileInfo.getFileName(), operRes, null);
+        }
+        return res;
     }
 
     @Override
@@ -184,9 +211,21 @@ public class FileInfoServiceImpl extends ServiceImpl<FileInfoMapper, FileInfo> i
     @Override
     @Transactional
     public int renameFile(String newFileName, String path, String openid) {
-        UpdateWrapper<FileInfo> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("path", path).eq("openid", openid).set("file_name", newFileName);
-        return fileInfoMapper.update(null, updateWrapper);
+        QueryWrapper<FileInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("openid", openid).eq("path", path);
+        FileInfo file = fileInfoMapper.selectOne(queryWrapper);
+        if(file != null) {
+            UpdateWrapper<FileInfo> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("path", path).eq("openid", openid).set("file_name", newFileName);
+            int res = fileInfoMapper.update(null, updateWrapper);
+            if(res > 0) {
+                String operRes = "成功";
+                operLogService.addLog(openid, UPDATE, file.getType(),file.getFileName(), operRes, newFileName);
+            }
+            return res;
+        }
+        return 0;
+
     }
 
     @Override
@@ -203,5 +242,26 @@ public class FileInfoServiceImpl extends ServiceImpl<FileInfoMapper, FileInfo> i
         }
         return resFiles;
     }
+
+    @Override
+    public List<FileInfo> selectByPathExactly(String path) {
+        List<FileInfo> list = null;
+        QueryWrapper<FileInfo> wrapper = new QueryWrapper<>();
+        wrapper.eq("path", path);
+        list = fileInfoMapper.selectList(wrapper);
+        return list;
+    }
+
+    @Override
+    public BigDecimal checkUserUsage(String openid) {
+
+        QueryWrapper<FileInfo> wrapper = new QueryWrapper<>();
+        wrapper.eq("openid", openid);
+        wrapper.select("IFNULL(sum(size),0) as total");
+        Map<String, Object> map = this.getMap(wrapper);
+        BigDecimal size = (BigDecimal) map.get("total");
+        return size;
+    }
+
 
 }

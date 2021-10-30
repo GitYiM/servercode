@@ -23,6 +23,7 @@ import unnet.weixin.netdisk.utils.AesCbcUtil;
 import unnet.weixin.netdisk.utils.Gensign;
 import unnet.weixin.netdisk.utils.HttpsUtils;
 import unnet.weixin.netdisk.utils.TokenSingleton;
+import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
@@ -271,7 +272,17 @@ public class LoginController extends BaseController {
                 map.put("msg", "解密成功");
                 MyUser myUser = JSON.parseObject(result, MyUser.class);
                 myUser.setOpenid(openid);
-                myUser.setBucket(openid.toLowerCase());
+                String bucket = openid.toLowerCase();
+                if (bucket.contains("_")) {
+                    bucket = bucket.replace("_", "");
+                }
+                if (bucket.contains("@")) {
+                    bucket = bucket.replace("@", "");
+                }
+                if (bucket.contains(".")) {
+                    bucket = bucket.replace(".", "");
+                }
+                myUser.setBucket(bucket);
                 map.put("userInfo", myUser);
             } else {
                 map.put("status", 0);
@@ -298,7 +309,7 @@ public class LoginController extends BaseController {
        if(result.get("errcode") != null) {
            return  new RestResult<>(1, result.getString("errmsg"));
        }
-       String userSession = openid + sk;
+       String userSession = DigestUtils.md5DigestAsHex((openid + sk).getBytes());
        LoginStatusInfo loginStatusInfo = new LoginStatusInfo(openid, sk);
        serializableRedisTemplate.opsForValue().set(userSession, loginStatusInfo);
 

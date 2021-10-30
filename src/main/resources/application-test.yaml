@@ -39,13 +39,13 @@ spring:
     druid:
 #      url: jdbc:mysql://140.143.230.66:3306/netdisk?nullCatalogMeansCurrent=true&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&serverTimezone=GMT%2B8&useSSL=false
 #      url: jdbc:mysql://172.23.27.139:3306/netdisk?nullCatalogMeansCurrent=true&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&serverTimezone=GMT%2B8&useSSL=false
-#      url: jdbc:mysql://localhost:3306/netdisk?nullCatalogMeansCurrent=true&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&serverTimezone=GMT%2B8&useSSL=false
-      url: jdbc:mysql://119.29.4.75:3306/netdisk?nullCatalogMeansCurrent=true&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&serverTimezone=GMT%2B8&useSSL=false
+      url: jdbc:mysql://localhost:3306/netdisk?nullCatalogMeansCurrent=true&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&serverTimezone=GMT%2B8&useSSL=false
+#      url: jdbc:mysql://1.15.245.79:3306/netdisk?nullCatalogMeansCurrent=true&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&serverTimezone=GMT%2B8&useSSL=false
 
       username: root
 #      password: 123456
 #      username: GitYiM
-      password: some_pass
+      password: 123456
       driver-class-name: com.mysql.cj.jdbc.Driver
       initialSize: 6
       minIdle: 6
@@ -60,7 +60,7 @@ minio:
 #  endpoint: http://172.23.27.119:7480
 #  access-key: U6DVKQNYCPHCIIP0XZFJ
 #  secret-key: A32aqcbXEECBtfxL2UqqBoMs2zyJJBMnRpG0gj7i
-  endpoint: http://cephio.unnetdisk.ltd:7480
+  endpoint: https://cephio.unnetdisk.ltd
   access-key: T1M1O9PCVNBKXJK9QPBL
   secret-key: gCzeVy9I33akmmPyycI5AWrGv6lQOuaOQ1n6HERx
 

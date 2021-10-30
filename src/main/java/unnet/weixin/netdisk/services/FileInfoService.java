@@ -3,6 +3,7 @@ package unnet.weixin.netdisk.services;
 import unnet.weixin.netdisk.entity.FileInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -75,4 +76,16 @@ public interface FileInfoService extends IService<FileInfo> {
      * @param openid
      */
     List<FileInfo> searchByKeword(String keyWord, String openid);
+
+    /**
+     * 根据path精确查找文件
+     * @param path
+     *
+     */
+    List<FileInfo> selectByPathExactly(String path);
+
+    /**
+     * 查询用户已经使用的空间
+     */
+    BigDecimal checkUserUsage(String openid);
 }
